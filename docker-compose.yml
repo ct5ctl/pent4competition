@@ -22,7 +22,10 @@ networks:
 services:
 
   pentagi:
-    image: vxcontrol/pentagi:latest
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    image: pentagi-local:latest
     restart: unless-stopped
     container_name: pentagi
     hostname: pentagi
@@ -123,6 +126,15 @@ services:
       - DOCKER_WORK_DIR=${DOCKER_WORK_DIR:-}
       - DOCKER_DEFAULT_IMAGE=${DOCKER_DEFAULT_IMAGE:-}
       - DOCKER_DEFAULT_IMAGE_FOR_PENTEST=${DOCKER_DEFAULT_IMAGE_FOR_PENTEST:-}
+      # Competition API Configuration
+      - COMPETITION_ENABLED=${COMPETITION_ENABLED:-false}
+      - COMPETITION_BASE_URL=${COMPETITION_BASE_URL}
+      - COMPETITION_TOKEN=${COMPETITION_TOKEN}
+      - COMPETITION_INTERVAL=${COMPETITION_INTERVAL:-60}
+      - COMPETITION_DEBUG_MODE=${COMPETITION_DEBUG_MODE:-false}
+      - COMPETITION_DEBUG_TARGET_IP=${COMPETITION_DEBUG_TARGET_IP}
+      - COMPETITION_DEBUG_TARGET_PORTS=${COMPETITION_DEBUG_TARGET_PORTS:-80}
+      - COMPETITION_DEBUG_CHALLENGE_CODE=${COMPETITION_DEBUG_CHALLENGE_CODE:-debug_test}
     logging:
       options:
         max-size: 50m

@@ -26,7 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// CreateFlow is the resolver for the createFlow field.
+// CreateFlow is the resolver for the createFlow field. 后端接受前端传入的modelProvider和input，创建一个flow
 func (r *mutationResolver) CreateFlow(ctx context.Context, modelProvider string, input string) (*model.Flow, error) {
 	uid, _, err := validatePermission(ctx, "flows.create")
 	if err != nil {

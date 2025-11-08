@@ -156,6 +156,16 @@ type Config struct {
 	LangfuseProjectID string `env:"LANGFUSE_PROJECT_ID"`
 	LangfusePublicKey string `env:"LANGFUSE_PUBLIC_KEY"`
 	LangfuseSecretKey string `env:"LANGFUSE_SECRET_KEY"`
+
+	// Competition API
+	CompetitionEnabled     bool   `env:"COMPETITION_ENABLED" envDefault:"false"`
+	CompetitionBaseURL     string `env:"COMPETITION_BASE_URL"`
+	CompetitionToken       string `env:"COMPETITION_TOKEN"`
+	CompetitionInterval    int    `env:"COMPETITION_INTERVAL" envDefault:"60"` // seconds
+	CompetitionDebugMode   bool   `env:"COMPETITION_DEBUG_MODE" envDefault:"false"`
+	CompetitionDebugIP     string `env:"COMPETITION_DEBUG_TARGET_IP"`
+	CompetitionDebugPorts  string `env:"COMPETITION_DEBUG_TARGET_PORTS" envDefault:"80"`
+	CompetitionDebugCode   string `env:"COMPETITION_DEBUG_CHALLENGE_CODE" envDefault:"debug_test"`
 }
 
 func NewConfig() (*Config, error) {

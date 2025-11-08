@@ -14,6 +14,7 @@ import (
 
 	"pentagi/migrations"
 	"pentagi/pkg/config"
+	"pentagi/pkg/competition"
 	"pentagi/pkg/controller"
 	"pentagi/pkg/database"
 	"pentagi/pkg/docker"
@@ -104,6 +105,17 @@ func main() {
 
 	r := router.NewRouter(queries, orm, cfg, providers, controller, subscriptions)
 
+	// Initialize competition service if enabled
+	var compService *competition.Service
+	if cfg.CompetitionEnabled {
+		compService = competition.NewService(cfg, controller, providers, queries)
+		if err := compService.Start(ctx); err != nil {
+			logrus.WithError(err).Error("Failed to start competition service")
+		} else {
+			logrus.Info("Competition service started")
+		}
+	}
+
 	// Run the server in a separate goroutine
 	go func() {
 		listen := net.JoinHostPort(cfg.ServerHost, strconv.Itoa(cfg.ServerPort))
@@ -120,6 +132,11 @@ func main() {
 	// Wait for termination signal
 	<-sigChan
 	log.Println("Shutting down...")
+
+	// Stop competition service
+	if compService != nil {
+		compService.Stop()
+	}
 
 	log.Println("Shutdown complete")
 }

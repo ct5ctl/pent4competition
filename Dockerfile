@@ -9,6 +9,13 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 WORKDIR /frontend
 
+# Configure npm to use Taobao mirror
+RUN npm config set registry https://registry.npmmirror.com
+
+# Configure Debian mirror
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources || \
+    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+
 # Install build essentials
 RUN apt-get update && apt-get install -y \
     ca-certificates \
@@ -39,6 +46,11 @@ FROM golang:1.24-bookworm as be-build
 
 ENV CGO_ENABLED=0
 ENV GO111MODULE=on
+ENV GOPROXY=https://goproxy.cn,direct
+
+# Configure Debian mirror for backend build
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources || \
+    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
 
 # Install build essentials
 RUN apt-get update && apt-get install -y \
@@ -73,6 +85,9 @@ RUN go build -trimpath -o /etester ./cmd/etester
 # STEP 3: Build the final image
 FROM alpine:3.22.1
 
+# Configure Alpine mirror
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+
 # Create non-root user and docker group with specific GID
 RUN addgroup -g 998 docker && \
     addgroup -S pentagi && \
@@ -82,10 +97,7 @@ RUN addgroup -g 998 docker && \
 # Install required packages
 RUN apk --no-cache add ca-certificates openssl shadow
 
-ADD entrypoint.sh /opt/pentagi/bin/
-
-RUN chmod +x /opt/pentagi/bin/entrypoint.sh
-
+# Create directories first
 RUN mkdir -p \
     /opt/pentagi/bin \
     /opt/pentagi/ssl \
@@ -93,6 +105,13 @@ RUN mkdir -p \
     /opt/pentagi/logs \
     /opt/pentagi/data \
     /opt/pentagi/conf
+
+# Copy entrypoint script
+COPY entrypoint.sh /opt/pentagi/bin/entrypoint.sh
+
+# Convert line endings from CRLF to LF and make executable
+RUN sed -i 's/\r$//' /opt/pentagi/bin/entrypoint.sh && \
+    chmod +x /opt/pentagi/bin/entrypoint.sh
 
 COPY --from=be-build /pentagi /opt/pentagi/bin/pentagi
 COPY --from=be-build /ctester /opt/pentagi/bin/ctester
